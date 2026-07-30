@@ -1,0 +1,29 @@
+{
+  "id": "example-patch",
+  "name": "Example Patch",
+  "description": "A minimal example patch for testing the Deck Patcher apply/revert workflow.",
+  "game": "Example",
+  "appid": "0",
+  "version": "1.0.0",
+  "author": "lovozeto",
+  "category": "game",
+  "type": "proton-prefix",
+  "tags": ["example", "test"],
+  "min_steamos": "3.5",
+  "reversible": true,
+  "auto_reapply": true,
+  "requirements": {},
+  "markers": [
+    {
+      "type": "file_exists",
+      "path": "$HOME/.local/share/deck-patcher/applied/example-patch.marker"
+    }
+  ],
+  "modifications": [
+    {
+      "action": "installs_file",
+      "path": "$HOME/.local/share/deck-patcher/applied/example-patch.marker",
+      "description": "Creates a marker file to track that this patch has been applied"
+    }
+  ]
+}

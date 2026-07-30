@@ -1,0 +1,53 @@
+name: Patch request
+description: Request a new patch for a game or app
+title: "[Request] "
+labels: ["patch-request"]
+body:
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      options:
+        - Game (Steam library)
+        - App (non-Steam, like Greenlight)
+    validations:
+      required: true
+  - type: input
+    id: name
+    attributes:
+      label: Game or app name
+      placeholder: "e.g. Forza Horizon 6"
+    validations:
+      required: true
+  - type: input
+    id: appid
+    attributes:
+      label: Steam AppID or Flatpak ID
+      placeholder: "e.g. 2483190 or io.github.unknownskl.greenlight"
+  - type: textarea
+    id: problem
+    attributes:
+      label: What should the patch fix?
+      placeholder: "Describe the problem and what you'd like the patch to do..."
+    validations:
+      required: true
+  - type: textarea
+    id: workaround
+    attributes:
+      label: Known workaround (if any)
+      placeholder: "Manual steps you've found..."
+  - type: textarea
+    id: references
+    attributes:
+      label: Reference links
+      placeholder: "ProtonDB, forum threads, Reddit..."
+  - type: input
+    id: steamos_version
+    attributes:
+      label: SteamOS version
+      placeholder: "e.g. 3.8.10"
+  - type: input
+    id: proton_version
+    attributes:
+      label: Proton version used
+      placeholder: "e.g. Proton Experimental 11.0-100"

@@ -1,0 +1,66 @@
+name: Validate patches
+
+on:
+  pull_request:
+    paths:
+      - 'patches/**'
+      - 'schemas/**'
+      - 'index.json'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install jsonschema shellcheck-py
+
+      - name: Validate patch.json files
+        run: |
+          python3 - <<'EOF'
+          import json
+          import jsonschema
+          from pathlib import Path
+
+          schema = json.loads(Path("schemas/patch-schema.json").read_text())
+          patches_dir = Path("patches")
+          errors = []
+          for patch_json in patches_dir.glob("*/patch.json"):
+              data = json.loads(patch_json.read_text())
+              try:
+                  jsonschema.validate(data, schema)
+                  print(f"  OK  {patch_json}")
+              except jsonschema.ValidationError as e:
+                  errors.append(f"FAIL {patch_json}: {e.message}")
+                  print(f"  FAIL {patch_json}: {e.message}")
+          if errors:
+              raise SystemExit(f"{len(errors)} validation error(s)")
+          EOF
+
+      - name: ShellCheck apply/revert scripts
+        run: |
+          find patches -name "apply.sh" -o -name "revert.sh" | xargs shellcheck --severity=warning
+
+      - name: Verify index.json consistency
+        run: |
+          python3 - <<'EOF'
+          import json
+          from pathlib import Path
+
+          index = json.loads(Path("index.json").read_text())
+          patch_dirs = {p.name for p in Path("patches").iterdir() if p.is_dir()}
+          index_ids = {p["id"] for p in index["patches"]}
+          missing_dirs = index_ids - patch_dirs
+          missing_index = patch_dirs - index_ids
+          if missing_dirs:
+              raise SystemExit(f"In index but no directory: {missing_dirs}")
+          if missing_index:
+              raise SystemExit(f"Directory exists but not in index: {missing_index}")
+          print("index.json is consistent")
+          EOF

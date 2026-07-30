@@ -1,0 +1,44 @@
+name: Bug report (patch not working)
+description: Report a patch that needs repeated re-applying or isn't working correctly
+title: "[Bug] "
+labels: ["bug", "needs-investigation"]
+body:
+  - type: input
+    id: patch_id
+    attributes:
+      label: Patch ID
+      placeholder: "e.g. forza-horizon-6-profile-switch"
+    validations:
+      required: true
+  - type: input
+    id: game
+    attributes:
+      label: Game or app name
+      placeholder: "e.g. Forza Horizon 6"
+    validations:
+      required: true
+  - type: input
+    id: reapply_count
+    attributes:
+      label: Times re-applied in last 24 hours
+      placeholder: "e.g. 3"
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: What's happening?
+      placeholder: "Describe what goes wrong, which markers are failing..."
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Last apply output (auto-filled by Deck Patcher)
+      placeholder: "Paste from the app if not auto-filled..."
+  - type: input
+    id: steamos_version
+    attributes:
+      label: SteamOS version
+  - type: input
+    id: patch_version
+    attributes:
+      label: Patch version

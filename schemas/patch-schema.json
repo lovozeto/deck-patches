@@ -1,0 +1,243 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/lovozeto/deck-patches/schemas/patch-schema.json",
+  "title": "Deck Patcher — patch.json schema",
+  "type": "object",
+  "required": [
+    "id",
+    "name",
+    "description",
+    "game",
+    "appid",
+    "version",
+    "author",
+    "category",
+    "type",
+    "tags",
+    "min_steamos",
+    "reversible",
+    "auto_reapply",
+    "requirements",
+    "markers"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "description": "Unique identifier for the patch. Kebab-case, lowercase alphanumeric and hyphens only."
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Human-readable display name."
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Short description of what the patch does."
+    },
+    "game": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Name of the game or app this patch targets."
+    },
+    "appid": {
+      "type": "string",
+      "description": "Steam AppID (numeric string) or Flatpak ID for non-Steam apps."
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$",
+      "description": "Semantic version of the patch (e.g. 1.0.0)."
+    },
+    "author": {
+      "type": "string",
+      "minLength": 1,
+      "description": "GitHub username or display name of the patch author."
+    },
+    "category": {
+      "type": "string",
+      "enum": ["game", "app"],
+      "description": "'game' for Steam library titles; 'app' for non-Steam software."
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "proton-prefix",
+        "flatpak-config",
+        "system-service",
+        "launch-options",
+        "mixed"
+      ],
+      "description": "Primary mechanism the patch uses."
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "Freeform tags for filtering and discovery."
+    },
+    "min_steamos": {
+      "type": "string",
+      "description": "Minimum SteamOS version required (e.g. '3.5')."
+    },
+    "reversible": {
+      "type": "boolean",
+      "description": "Whether the patch ships a revert.sh and can be undone."
+    },
+    "auto_reapply": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether Deck Patcher should re-apply this patch after SteamOS updates."
+    },
+    "requirements": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "steam_closed": {
+          "type": "boolean",
+          "description": "Patch requires Steam to be closed before applying."
+        },
+        "game_closed": {
+          "type": "boolean",
+          "description": "Patch requires the target game to be closed before applying."
+        }
+      },
+      "description": "Pre-conditions that must be met before apply/revert."
+    },
+    "markers": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/marker"
+      },
+      "description": "One or more checks used to determine whether the patch is currently applied."
+    },
+    "modifications": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/modification"
+      },
+      "description": "Declarative list of changes the patch makes (informational; not machine-executed)."
+    },
+    "app_setup": {
+      "$ref": "#/definitions/app_setup",
+      "description": "Optional non-Steam app configuration metadata."
+    }
+  },
+  "definitions": {
+    "marker": {
+      "type": "object",
+      "required": ["type"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "file_exists",
+            "dir_exists",
+            "symlink_target",
+            "service_active",
+            "launch_options_contains"
+          ]
+        },
+        "path": {
+          "type": "string",
+          "description": "Filesystem path to check. Supports $HOME and other env vars."
+        },
+        "target": {
+          "type": "string",
+          "description": "Expected symlink target (used with symlink_target)."
+        },
+        "service": {
+          "type": "string",
+          "description": "systemd service name (used with service_active)."
+        },
+        "contains": {
+          "type": "string",
+          "description": "Substring that must be present (used with launch_options_contains)."
+        }
+      }
+    },
+    "modification": {
+      "type": "object",
+      "required": ["action", "path", "description"],
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "creates_symlink",
+            "installs_file",
+            "creates_directory",
+            "creates_service",
+            "edits_vdf",
+            "edits_registry",
+            "copies_file",
+            "sets_launch_options"
+          ]
+        },
+        "path": {
+          "type": "string",
+          "description": "Primary filesystem path affected by this modification."
+        },
+        "description": {
+          "type": "string",
+          "description": "Plain-language explanation of what this modification does."
+        },
+        "requires_steam_closed": {
+          "type": "boolean",
+          "description": "True if Steam must be closed when this specific action runs."
+        }
+      }
+    },
+    "app_setup": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "flatpak_id": {
+          "type": "string",
+          "description": "Flatpak application ID (e.g. io.github.unknownskl.greenlight)."
+        },
+        "steam_shortcut": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "exe": {
+              "type": "string"
+            },
+            "launch_options": {
+              "type": "string"
+            },
+            "start_dir": {
+              "type": "string"
+            }
+          },
+          "description": "Fields to set on the Steam non-Steam shortcut entry."
+        },
+        "steamgriddb_search": {
+          "type": "string",
+          "description": "Search term to use on SteamGridDB for artwork."
+        },
+        "proton": {
+          "type": ["string", "null"],
+          "description": "Proton version to use, or null to run natively."
+        },
+        "controller_layout": {
+          "type": ["string", "null"],
+          "description": "Steam Input controller layout name, or null."
+        },
+        "collections": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Steam collection names this app should be added to."
+        }
+      }
+    }
+  }
+}

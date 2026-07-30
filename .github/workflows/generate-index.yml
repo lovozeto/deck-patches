@@ -1,0 +1,55 @@
+name: Generate index.json
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'patches/**/patch.json'
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Generate index.json
+        run: |
+          python3 - <<'EOF'
+          import json
+          from datetime import datetime, timezone
+          from pathlib import Path
+
+          patches = []
+          for patch_json in sorted(Path("patches").glob("*/patch.json")):
+              data = json.loads(patch_json.read_text())
+              patches.append(data)
+
+          patches.sort(key=lambda p: p["id"])
+
+          index = {
+              "version": 1,
+              "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+              "patches": patches,
+          }
+          Path("index.json").write_text(json.dumps(index, indent=2, ensure_ascii=False) + "\n")
+          print(f"Generated index.json with {len(patches)} patch(es)")
+          EOF
+
+      - name: Commit if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add index.json
+          if git diff --cached --quiet; then
+            echo "No changes to index.json"
+          else
+            git commit -m "chore: regenerate index.json"
+            git push
+          fi

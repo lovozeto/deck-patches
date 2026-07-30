@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "generated_at": "2026-07-29T00:00:00Z",
+  "patches": [
+    {
+      "id": "example-patch",
+      "name": "Example Patch",
+      "description": "A minimal example patch for testing the Deck Patcher workflow.",
+      "game": "Example",
+      "appid": "0",
+      "version": "1.0.0",
+      "author": "lovozeto",
+      "category": "game",
+      "type": "proton-prefix",
+      "tags": ["example", "test"],
+      "min_steamos": "3.5",
+      "reversible": true,
+      "auto_reapply": true,
+      "requirements": {},
+      "markers": [
+        {
+          "type": "file_exists",
+          "path": "$HOME/.local/share/deck-patcher/applied/example-patch.marker"
+        }
+      ]
+    }
+  ]
+}
