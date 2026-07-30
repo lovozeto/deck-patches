@@ -45,7 +45,8 @@ jobs:
 
       - name: ShellCheck apply/revert scripts
         run: |
-          find patches -name "apply.sh" -o -name "revert.sh" | xargs shellcheck --severity=warning
+          find patches \( -name "apply.sh" -o -name "revert.sh" \) \
+            | xargs --no-run-if-empty shellcheck --severity=warning
 
       - name: Verify index.json consistency
         run: |
